@@ -3,7 +3,7 @@
 
 A small Python library that prices the building blocks of credit structuring, from a plain bond up to a credit-linked note (CLN). I built it in four stages, checking each against hand-worked numbers before moving on: bonds and the capital-protected note, default risk, credit default swaps, then the CLN.
 
-My [autocall pricer](https://github.com/ohunter-dev/autocall) covered the equity side of structuring. This is the other half: rates and credit, and the issuing bank's own credit risk, which the autocall left out.
+My [autocall pricer](https://github.com/ohunter-dev/autocall) covered the equity side of structuring. This is the other half: rates and credit, and the issuing bank's own credit risk, which the autocall repo left out.
 
 ![Credit panels](docs/credit_panels.png)
 
@@ -17,7 +17,7 @@ My [autocall pricer](https://github.com/ohunter-dev/autocall) covered the equity
 
 **3. A credit spread is an expected loss.** `spread ≈ default rate × (1 − recovery)`. A 1.2% spread with 40% recovery prices about a 2% default rate a year. Default probabilities compound rather than add, because a name can only default once: 16.7% a year is a 56.5% chance over 5 years, not 83%. These are market-implied pricing numbers, not forecasts; spreads carry a risk premium, so they usually sit above historical default rates.
 
-**4. A CDS has the same shape as everything else.** The premium is paid only while the name survives (weighted by survival); the protection pays once, in the year default happens. The par spread is `protection ÷ risky annuity`: 1.21% here, against 1.20% from the credit triangle shortcut. That's the same shape as the autocall's fair coupon `(1 − A) / B`. The CS01 on 10m is about 4,200 per basis point.
+**4. A CDS has the same shape as everything else.** The premium is paid only while the name survives (weighted by survival); the protection pays once, in the year default happens. The par spread is `protection ÷ risky annuity`: 1.21% here, against 1.20% from the credit triangle shortcut. That's the same shape as the autocall's fair coupon `(1 − A) / B`. The CS01 on 10m notional is about 4,200 per bp. 
 
 **5. A CLN coupon is three things added up.** The client buys the bank's note and, inside it, sells protection on a reference name:
 
@@ -26,11 +26,11 @@ My [autocall pricer](https://github.com/ohunter-dev/autocall) covered the equity
 | Risk-free rate | 4.00% | lending cash |
 | Issuing bank's spread | 0.60% | lending to the bank |
 | Reference CDS spread | 1.20% | insuring the reference name |
-| Fair coupon | 6.01% | (5.80% added up; the gap is compounding) |
+| Fair coupon | 6.01% | (5.80% added up; the 0.21% gap is compounding) |
 
 If the reference name defaults, the note stops, coupons stop and the client gets the recovery, about 40 per 100.
 
-**6. Wrong-way risk is the trap.** The pricing treats the bank and the reference name as separate risks. If a bank issues a CLN on its own sovereign, they're not: the bank holds its government's bonds and relies on state support, so in the scenario where the client loses 60 on the sovereign, the bank owing them the recovery may be failing too. The coupon looks like pay for two risks; it's really one concentrated risk with a much worse worst case. An issuer unrelated to the reference name avoids it.
+**6. Wrong-way risk is the trap.** The pricing treats the bank and the reference name as separate risks. If a bank issues a CLN on its own sovereign, they're not: the bank holds its government's bonds and relies on state support, so in the scenario where the client loses 60 on the sovereign, the bank owing them the recovery may be failing too. The coupon looks like pay for two risks; it's really one concentrated risk with a much worse worst case. An issuer unrelated to the reference name reduces it, though in a real crisis even unrelated names tend to fall together.
 
 ## Run it
 
